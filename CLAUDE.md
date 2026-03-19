@@ -81,6 +81,14 @@ Personal health records viewer. Local-first architecture with all health data st
 - All APIs are free, no registration, no API keys required
 - NotebookLM notebooks: Health Reference (2e4ec1ae-56d7-42d8-b2fb-e8eeaefe8f14), Health Journal (8a36beaf-37d0-4190-8429-bdabefcf7c7e)
 
+### Health Enrichment Skill (`.agents/skills/health-enrich/`)
+- CLI skill for plain-language health data explanations
+- Quick mode: single record enrichment from clipboard
+- Session mode: multi-record deep dive with cross-record analysis
+- Uses `scripts/health-enrich.ts` for API calls and file I/O
+- Outputs: `.enrichment.json` (import to web app) + Obsidian note (knowledge accumulation)
+- Shell alias: `ask` reads clipboard and pipes to Claude
+
 ### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
 - Required passphrase setup on first use
 - AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)
@@ -98,6 +106,10 @@ bun run build        # Production build
 bunx vitest run      # Run tests
 bunx vitest          # Watch mode tests
 bun run scripts/test-real-ccd.ts  # Test parser against real CCD files
+ask                  # Shell alias: enrich health data from clipboard
+bun run scripts/health-enrich.ts lookup     # Fetch medical API data
+bun run scripts/health-enrich.ts write-enrichment  # Write .enrichment.json
+bun run scripts/health-enrich.ts write-note        # Write Obsidian note
 ```
 
 ## Testing
