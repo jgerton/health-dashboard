@@ -6,35 +6,42 @@
  */
 
 const DB_NAME = "health-dashboard";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const STORES = {
   documents: "documents",
   healthData: "healthData",
   meta: "meta",
+  appointments: "appointments",
 } as const;
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
+      const oldVersion = event.oldVersion;
 
-      if (!db.objectStoreNames.contains(STORES.documents)) {
+      // v0 -> v1: Create original stores
+      if (oldVersion < 1) {
         const docStore = db.createObjectStore(STORES.documents, {
           keyPath: "id",
         });
         docStore.createIndex("sourceFile", "sourceFile", { unique: false });
         docStore.createIndex("hash", "hash", { unique: true });
-      }
 
-      if (!db.objectStoreNames.contains(STORES.healthData)) {
         db.createObjectStore(STORES.healthData, { keyPath: "documentId" });
+        db.createObjectStore(STORES.meta, { keyPath: "key" });
       }
 
-      if (!db.objectStoreNames.contains(STORES.meta)) {
-        db.createObjectStore(STORES.meta, { keyPath: "key" });
+      // v1 -> v2: Add appointments store
+      if (oldVersion < 2) {
+        const apptStore = db.createObjectStore(STORES.appointments, {
+          keyPath: "id",
+        });
+        apptStore.createIndex("uid", "uid", { unique: false });
+        apptStore.createIndex("dateTime", "dateTime", { unique: false });
       }
     };
 
