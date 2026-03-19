@@ -21,3 +21,9 @@ export {
   importEncryptedData,
   type EncryptedExportPayload,
 } from "./encrypted-export";
+
+export {
+  storeEncryptedAppointment,
+  getAllEncryptedAppointments,
+  deleteAppointment,
+} from "./encrypted-appointments";
