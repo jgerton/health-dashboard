@@ -94,8 +94,9 @@ export default function Home() {
             <FileUpload
               onImport={handleImport}
               onImportIcs={async (files) => {
-                await importIcsFiles(files);
+                const result = await importIcsFiles(files);
                 setTimeout(() => setShowImport(false), 1000);
+                return result;
               }}
             />
           </div>
@@ -164,8 +165,9 @@ export default function Home() {
           <FileUpload
             onImport={handleImport}
             onImportIcs={async (files) => {
-              await importIcsFiles(files);
+              const result = await importIcsFiles(files);
               setTimeout(() => setShowImport(false), 1000);
+              return result;
             }}
           />
         </DialogContent>

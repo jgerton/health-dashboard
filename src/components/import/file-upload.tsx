@@ -13,11 +13,12 @@ interface ImportResult {
   error?: string;
   data?: ParsedCCD;
   icsFile?: boolean;
+  appointmentCount?: number;
 }
 
 interface FileUploadProps {
   onImport: (results: ParsedCCD[], rawXmls: string[]) => void;
-  onImportIcs?: (files: { content: string; name: string }[]) => void;
+  onImportIcs?: (files: { content: string; name: string }[]) => Promise<{ imported: number; duplicates: number; errors: string[] }>;
 }
 
 export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
@@ -86,7 +87,14 @@ export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
       }
 
       if (icsFiles.length > 0 && onImportIcs) {
-        await onImportIcs(icsFiles);
+        const icsResult = await onImportIcs(icsFiles);
+        // Update results with appointment count
+        const updatedResults = importResults.map((r) =>
+          r.icsFile && r.success
+            ? { ...r, appointmentCount: icsResult.imported }
+            : r
+        );
+        setResults(updatedResults);
       }
     },
     [onImport, onImportIcs]
@@ -215,7 +223,9 @@ export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
                   )}
                   {result.success && result.icsFile && (
                     <span className="text-gray-400 text-xs ml-auto">
-                      calendar file imported
+                      {result.appointmentCount !== undefined
+                        ? `${result.appointmentCount} appointments`
+                        : "calendar file imported"}
                     </span>
                   )}
                 </div>
