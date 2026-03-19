@@ -14,6 +14,7 @@ import { ImmunizationsView } from "@/components/dashboard/immunizations-view";
 import { SearchBar } from "@/components/dashboard/search-bar";
 import { VisitsView } from "@/components/dashboard/visits-view";
 import { DataManagement } from "@/components/dashboard/data-management";
+import { AppointmentsView } from "@/components/appointments/appointments-view";
 import { useHealthData } from "@/lib/hooks/use-health-data";
 import { useAppointments } from "@/lib/hooks/use-appointments";
 import type { ParsedCCD } from "@/lib/ccd/types";
@@ -37,9 +38,10 @@ export default function Home() {
     importDocuments,
     clearAllData,
   } = useHealthData(masterKey);
-  const { importIcsFiles } = useAppointments(masterKey);
+  const { upcoming, past, cancelled, importIcsFiles } = useAppointments(masterKey);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
+  const [currentView, setCurrentView] = useState<"appointments" | "dashboard">("appointments");
 
   useEffect(() => {
     registerServiceWorker();
@@ -81,15 +83,17 @@ export default function Home() {
         onLock={lock}
         patientName={data.patientName}
         hasData={hasData}
+        currentView={currentView}
+        onViewChange={setCurrentView}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {!hasData ? (
+        {!hasData && upcoming.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <h2 className="text-2xl font-bold mb-2">Welcome to Health Dashboard</h2>
             <p className="text-gray-500 mb-8 text-center max-w-md">
-              Import your CCD/XML health records to view your medications,
-              lab results, conditions, and more. All data stays in your browser.
+              Import your health records (.xml) or calendar files (.ics)
+              to get started. All data stays in your browser.
             </p>
             <FileUpload
               onImport={handleImport}
@@ -100,6 +104,15 @@ export default function Home() {
               }}
             />
           </div>
+        ) : currentView === "appointments" ? (
+          <AppointmentsView
+            upcoming={upcoming}
+            past={past}
+            cancelled={cancelled}
+            followUps={data.followUps}
+            onViewRecords={() => setCurrentView("dashboard")}
+            onImportClick={() => setShowImport(true)}
+          />
         ) : (
           <div className="space-y-6">
             <SearchBar data={data} onNavigate={setActiveTab} />

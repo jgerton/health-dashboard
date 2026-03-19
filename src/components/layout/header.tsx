@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Upload, Trash2, Shield, Lock } from "lucide-react";
+import { Heart, Upload, Trash2, Shield, Lock, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
@@ -9,6 +9,8 @@ interface HeaderProps {
   onLock?: () => void;
   patientName?: string;
   hasData?: boolean;
+  currentView?: "appointments" | "dashboard";
+  onViewChange?: (view: "appointments" | "dashboard") => void;
 }
 
 export function Header({
@@ -17,6 +19,8 @@ export function Header({
   onLock,
   patientName,
   hasData,
+  currentView,
+  onViewChange,
 }: HeaderProps) {
   return (
     <header className="border-b bg-white sticky top-0 z-50">
@@ -37,6 +41,26 @@ export function Header({
               <Shield className="h-3 w-3" aria-hidden="true" />
               <span>Local only</span>
             </div>
+
+            {onViewChange && currentView === "dashboard" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onViewChange("appointments")}
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Appointments
+              </Button>
+            )}
+            {onViewChange && currentView === "appointments" && hasData && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onViewChange("dashboard")}
+              >
+                Records
+              </Button>
+            )}
 
             <Button
               variant="outline"
