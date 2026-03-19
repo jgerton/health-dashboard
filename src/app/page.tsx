@@ -15,6 +15,7 @@ import { SearchBar } from "@/components/dashboard/search-bar";
 import { VisitsView } from "@/components/dashboard/visits-view";
 import { DataManagement } from "@/components/dashboard/data-management";
 import { useHealthData } from "@/lib/hooks/use-health-data";
+import { useAppointments } from "@/lib/hooks/use-appointments";
 import type { ParsedCCD } from "@/lib/ccd/types";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { useVault } from "@/lib/auth";
@@ -36,6 +37,7 @@ export default function Home() {
     importDocuments,
     clearAllData,
   } = useHealthData(masterKey);
+  const { importIcsFiles } = useAppointments(masterKey);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
 
@@ -89,7 +91,13 @@ export default function Home() {
               Import your CCD/XML health records to view your medications,
               lab results, conditions, and more. All data stays in your browser.
             </p>
-            <FileUpload onImport={handleImport} />
+            <FileUpload
+              onImport={handleImport}
+              onImportIcs={async (files) => {
+                await importIcsFiles(files);
+                setTimeout(() => setShowImport(false), 1000);
+              }}
+            />
           </div>
         ) : (
           <div className="space-y-6">
@@ -153,7 +161,13 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle>Import Health Records</DialogTitle>
           </DialogHeader>
-          <FileUpload onImport={handleImport} />
+          <FileUpload
+            onImport={handleImport}
+            onImportIcs={async (files) => {
+              await importIcsFiles(files);
+              setTimeout(() => setShowImport(false), 1000);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
