@@ -1,7 +1,8 @@
 "use client";
 
-import { Heart, Upload, Trash2, Shield, Lock, CalendarDays } from "lucide-react";
+import { Heart, Upload, Trash2, Shield, Lock, CalendarDays, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useComfort } from "@/lib/comfort";
 
 interface HeaderProps {
   onImportClick: () => void;
@@ -22,6 +23,7 @@ export function Header({
   currentView,
   onViewChange,
 }: HeaderProps) {
+  const { isComfort, toggleComfort } = useComfort();
   return (
     <header className="border-b bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,6 +39,18 @@ export function Header({
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant={isComfort ? "default" : "outline"}
+              size="sm"
+              onClick={toggleComfort}
+              title={isComfort ? "Switch to standard view" : "Switch to comfort view"}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">
+                {isComfort ? "Comfort" : "Standard"}
+              </span>
+            </Button>
+
             <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400 mr-2">
               <Shield className="h-3 w-3" aria-hidden="true" />
               <span>Local only</span>
