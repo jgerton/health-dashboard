@@ -72,6 +72,15 @@ Personal health records viewer. Local-first architecture with all health data st
 - Preserves: clinical values, dates of service, medical codes, provider names
 - Pure function, no side effects
 
+### Medical APIs (`src/lib/medical-apis/`)
+- NLM Clinical Tables: LOINC code lookup by lab test name
+- MedlinePlus Connect: LOINC/ICD code to plain-language health topic
+- MedlinePlus Health Topics: keyword search for consumer health articles
+- OpenFDA: drug labels (indications, interactions, warnings) and adverse event reports
+- Unified facade routes queries by record type (lab, medication, problem, etc.)
+- All APIs are free, no registration, no API keys required
+- NotebookLM notebooks: Health Reference (2e4ec1ae-56d7-42d8-b2fb-e8eeaefe8f14), Health Journal (8a36beaf-37d0-4190-8429-bdabefcf7c7e)
+
 ### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
 - Required passphrase setup on first use
 - AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)
