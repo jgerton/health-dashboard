@@ -40,6 +40,17 @@ Personal health records viewer. Local-first architecture with all health data st
 - Doctor name and phone extracted from event description via pattern matching
 - `useAppointments` hook provides React state with upcoming/past/cancelled filtering
 
+### Follow-ups (`src/lib/ccd/follow-ups.ts`)
+- Best-effort follow-up detection from CCD data (not clinical NLP)
+- Scans problems for future onset dates, lab results for common recheck intervals
+- Derived at read time via `extractFollowUps()`, not stored separately
+- Surfaced in `AggregatedHealthData.followUps`
+
+### Navigation
+- Default view after unlock: Appointments landing (upcoming, follow-ups, past)
+- "View Health Records" navigates to tabbed dashboard
+- Header toggle switches between appointments and dashboard views
+
 ### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
 - Required passphrase setup on first use
 - AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)
