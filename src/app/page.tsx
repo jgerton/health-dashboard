@@ -43,7 +43,7 @@ export default function Home() {
     clearAllData,
   } = useHealthData(masterKey);
   const { upcoming, past, cancelled, importIcsFiles } = useAppointments(masterKey);
-  const { importEnrichmentJson } = useEnrichments(masterKey);
+  const { importEnrichmentJson, insights } = useEnrichments(masterKey);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
   const [currentView, setCurrentView] = useState<"appointments" | "dashboard">("appointments");
@@ -130,6 +130,7 @@ export default function Home() {
             past={past}
             cancelled={cancelled}
             followUps={data.followUps}
+            insights={insights}
             onViewRecords={() => setCurrentView("dashboard")}
             onImportClick={() => setShowImport(true)}
           />
