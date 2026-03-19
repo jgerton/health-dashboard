@@ -5,14 +5,16 @@ import {
   changePassphrase,
   isVaultInitialized,
   lockVault,
+  getMasterKey,
 } from "@/lib/crypto/key-manager";
 import { encrypt, decrypt } from "@/lib/crypto/encryption";
 
 // fake-indexeddb is auto-loaded by setup.ts
 // Each test gets a fresh IDB via beforeEach
 beforeEach(() => {
-  // Clear all IDB databases between tests
+  // Clear all IDB databases between tests and reset in-memory key state
   indexedDB = new IDBFactory();
+  lockVault();
 });
 
 describe("key-manager", () => {
@@ -102,6 +104,24 @@ describe("key-manager", () => {
       // After locking, must unlock again to use
       const key = await unlockVault("pass");
       expect(key).toBeDefined();
+    });
+  });
+
+  describe("getMasterKey", () => {
+    it("returns null before any vault operation", () => {
+      expect(getMasterKey()).toBeNull();
+    });
+
+    it("returns the master key after initializeVault", async () => {
+      await initializeVault("pass");
+      expect(getMasterKey()).not.toBeNull();
+      expect(getMasterKey()!.type).toBe("secret");
+    });
+
+    it("returns null after lockVault", async () => {
+      await initializeVault("pass");
+      lockVault();
+      expect(getMasterKey()).toBeNull();
     });
   });
 });
