@@ -6,9 +6,10 @@ import type { Problem } from "@/lib/ccd/types";
 
 interface ProblemsViewProps {
   problems: Problem[];
+  comfort?: boolean;
 }
 
-export function ProblemsView({ problems }: ProblemsViewProps) {
+export function ProblemsView({ problems, comfort = false }: ProblemsViewProps) {
   const active = problems.filter((p) => p.status === "active");
   const inactive = problems.filter((p) => p.status !== "active");
 
@@ -51,6 +52,9 @@ export function ProblemsView({ problems }: ProblemsViewProps) {
                         since {formatDate(problem.onsetDate)}
                       </span>
                     )}
+                    {!comfort && problem.code && (
+                      <span className="text-xs text-gray-400 ml-2">{problem.code}</span>
+                    )}
                   </div>
                   <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
                     Active
@@ -72,7 +76,17 @@ export function ProblemsView({ problems }: ProblemsViewProps) {
                   key={problem.id}
                   className="flex items-start justify-between py-2 px-3 rounded-lg hover:bg-gray-50"
                 >
-                  <span className="text-gray-600">{problem.name}</span>
+                  <div>
+                    <span className="text-gray-600">{problem.name}</span>
+                    {!comfort && problem.code && (
+                      <span className="text-xs text-gray-400 ml-2">{problem.code}</span>
+                    )}
+                    {!comfort && problem.resolvedDate && (
+                      <span className="text-xs text-gray-400 ml-2">
+                        resolved {formatDate(problem.resolvedDate)}
+                      </span>
+                    )}
+                  </div>
                   <Badge variant="secondary">{problem.status}</Badge>
                 </div>
               ))}

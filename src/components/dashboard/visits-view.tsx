@@ -8,6 +8,7 @@ import type { ParsedCCD } from "@/lib/ccd/types";
 
 interface VisitsViewProps {
   documents: ParsedCCD[];
+  comfort?: boolean;
 }
 
 interface VisitSummary {
@@ -22,7 +23,7 @@ interface VisitSummary {
   immunizations: number;
 }
 
-export function VisitsView({ documents }: VisitsViewProps) {
+export function VisitsView({ documents, comfort: _comfort = false }: VisitsViewProps) {
   const visits = useMemo(() => {
     const summaries: VisitSummary[] = documents.map((doc) => ({
       id: doc.documentInfo.id,

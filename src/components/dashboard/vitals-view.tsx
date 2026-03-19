@@ -5,9 +5,10 @@ import type { VitalSign } from "@/lib/ccd/types";
 
 interface VitalsViewProps {
   vitalSigns: VitalSign[];
+  comfort?: boolean;
 }
 
-export function VitalsView({ vitalSigns }: VitalsViewProps) {
+export function VitalsView({ vitalSigns, comfort = false }: VitalsViewProps) {
   const sorted = [...vitalSigns].sort((a, b) =>
     b.date.localeCompare(a.date)
   );
@@ -43,6 +44,9 @@ export function VitalsView({ vitalSigns }: VitalsViewProps) {
                           </span>
                         )}
                       </p>
+                      {!comfort && m.code && (
+                        <span className="text-xs text-gray-400">{m.code}</span>
+                      )}
                     </div>
                   ))}
                 </div>

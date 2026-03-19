@@ -10,6 +10,7 @@ import type { LabResult, LabObservation } from "@/lib/ccd/types";
 
 interface LabResultsViewProps {
   results: LabResult[];
+  comfort?: boolean;
 }
 
 function interpretationBadge(interpretation: LabObservation["interpretation"]) {
@@ -58,7 +59,7 @@ function valueColor(interpretation: LabObservation["interpretation"]): string {
   }
 }
 
-export function LabResultsView({ results }: LabResultsViewProps) {
+export function LabResultsView({ results, comfort = false }: LabResultsViewProps) {
   const [trendTest, setTrendTest] = useState<string | null>(null);
 
   // Sort by date descending
@@ -147,7 +148,12 @@ export function LabResultsView({ results }: LabResultsViewProps) {
               {sortedResults.slice(0, 20).map((panel) => (
                 <div key={panel.id} className="border rounded-lg overflow-hidden">
                   <div className="bg-gray-50 px-4 py-2 flex justify-between items-center">
-                    <span className="font-medium">{panel.panelName}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{panel.panelName}</span>
+                      {!comfort && panel.panelCode && (
+                        <span className="text-xs text-gray-400">{panel.panelCode}</span>
+                      )}
+                    </div>
                     <span className="text-sm text-gray-500">
                       {formatDate(panel.date)}
                     </span>
@@ -174,6 +180,9 @@ export function LabResultsView({ results }: LabResultsViewProps) {
                             {obs.name}
                             {hasTrend && (
                               <TrendingUp className="h-3 w-3 text-gray-400" aria-hidden="true" />
+                            )}
+                            {!comfort && obs.code && (
+                              <span className="text-xs text-gray-400">{obs.code}</span>
                             )}
                           </span>
                           <div className="flex items-center gap-3">

@@ -7,9 +7,10 @@ import type { Allergy } from "@/lib/ccd/types";
 
 interface AllergiesViewProps {
   allergies: Allergy[];
+  comfort?: boolean;
 }
 
-export function AllergiesView({ allergies }: AllergiesViewProps) {
+export function AllergiesView({ allergies, comfort = false }: AllergiesViewProps) {
   // Deduplicate by allergen name
   const unique = new Map<string, Allergy>();
   for (const allergy of allergies) {
@@ -51,6 +52,9 @@ export function AllergiesView({ allergies }: AllergiesViewProps) {
                     <p className="text-sm text-gray-600 mt-1">
                       Reaction: {allergy.reaction}
                     </p>
+                  )}
+                  {!comfort && allergy.allergenCode && (
+                    <span className="text-xs text-gray-400">{allergy.allergenCode}</span>
                   )}
                 </div>
                 <Badge

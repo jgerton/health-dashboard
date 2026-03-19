@@ -6,9 +6,10 @@ import type { Immunization } from "@/lib/ccd/types";
 
 interface ImmunizationsViewProps {
   immunizations: Immunization[];
+  comfort?: boolean;
 }
 
-export function ImmunizationsView({ immunizations }: ImmunizationsViewProps) {
+export function ImmunizationsView({ immunizations, comfort = false }: ImmunizationsViewProps) {
   // Group by vaccine name, show most recent date
   const grouped = new Map<string, Immunization[]>();
   for (const imm of immunizations) {
@@ -52,6 +53,12 @@ export function ImmunizationsView({ immunizations }: ImmunizationsViewProps) {
                       <span className="text-xs text-gray-400 ml-2">
                         ({sorted.length} doses)
                       </span>
+                    )}
+                    {!comfort && latest.code && (
+                      <span className="text-xs text-gray-400 ml-2">{latest.code}</span>
+                    )}
+                    {!comfort && latest.lotNumber && (
+                      <span className="text-xs text-gray-400 ml-2">Lot: {latest.lotNumber}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">

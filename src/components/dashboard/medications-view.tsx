@@ -6,6 +6,7 @@ import type { Medication } from "@/lib/ccd/types";
 
 interface MedicationsViewProps {
   medications: Medication[];
+  comfort?: boolean;
 }
 
 function statusBadge(status: Medication["status"]) {
@@ -19,7 +20,7 @@ function statusBadge(status: Medication["status"]) {
   }
 }
 
-export function MedicationsView({ medications }: MedicationsViewProps) {
+export function MedicationsView({ medications, comfort = false }: MedicationsViewProps) {
   const active = medications.filter((m) => m.status === "active");
   const other = medications.filter((m) => m.status !== "active");
 
@@ -52,7 +53,7 @@ export function MedicationsView({ medications }: MedicationsViewProps) {
             </h3>
             <div className="space-y-3">
               {uniqueActive.map((med) => (
-                <MedicationRow key={med.id} medication={med} />
+                <MedicationRow key={med.id} medication={med} comfort={comfort} />
               ))}
             </div>
           </div>
@@ -65,7 +66,7 @@ export function MedicationsView({ medications }: MedicationsViewProps) {
             </h3>
             <div className="space-y-3">
               {uniqueOther.map((med) => (
-                <MedicationRow key={med.id} medication={med} />
+                <MedicationRow key={med.id} medication={med} comfort={comfort} />
               ))}
             </div>
           </div>
@@ -81,9 +82,9 @@ export function MedicationsView({ medications }: MedicationsViewProps) {
   );
 }
 
-function MedicationRow({ medication }: { medication: Medication }) {
+function MedicationRow({ medication, comfort = false }: { medication: Medication; comfort?: boolean }) {
   return (
-    <div className="flex items-start justify-between py-2 px-3 rounded-lg hover:bg-gray-50">
+    <div className={`flex items-start justify-between px-3 rounded-lg hover:bg-gray-50 ${comfort ? "py-3 text-lg" : "py-2"}`}>
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="font-medium text-base">{medication.name}</span>
@@ -95,11 +96,14 @@ function MedicationRow({ medication }: { medication: Medication }) {
               {medication.dose} {medication.doseUnit}
             </span>
           )}
-          {medication.route && <span>{medication.route}</span>}
+          {!comfort && medication.route && <span>{medication.route}</span>}
           {medication.startDate && (
             <span>Since {formatDate(medication.startDate)}</span>
           )}
         </div>
+        {!comfort && medication.code && (
+          <span className="text-xs text-gray-400">{medication.code}</span>
+        )}
       </div>
     </div>
   );
