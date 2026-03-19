@@ -16,6 +16,7 @@ import {
   changePassphrase as changeVaultPassphrase,
   getMasterKey,
 } from "@/lib/crypto/key-manager";
+import { migrateUnencryptedData } from "@/lib/db/migration";
 
 type VaultState = "loading" | "uninitialized" | "locked" | "unlocked";
 
@@ -46,6 +47,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     try {
       setError(null);
       const key = await initializeVault(passphrase);
+      await migrateUnencryptedData(key);
       setMasterKey(key);
       setState("unlocked");
     } catch (e) {
