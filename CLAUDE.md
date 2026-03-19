@@ -65,6 +65,10 @@ Personal health records viewer. Local-first architecture with all health data st
 - Encrypted in IDB `annotations` and `insights` stores (v3 migration)
 - Imported via `.enrichment.json` files from CLI enrichment skill
 - `useEnrichments` hook provides React state with record and tag filtering
+- ClipboardButton copies structured health context to clipboard for CLI enrichment
+- AnnotationBadge renders inline severity badges (info/warning/alert) with expandable explanations
+- InsightsSection renders cross-record analyses on the appointments landing page
+- Context formatters package lab results, medications, problems, and vitals as structured markdown
 
 ### PHI Scrubber (`src/lib/scrub/`)
 - Strips patient-identifiable fields before outbound API calls
