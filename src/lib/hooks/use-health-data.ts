@@ -31,12 +31,17 @@ export interface AggregatedHealthData {
   summary: HealthDataSummary;
 }
 
-export function useHealthData(masterKey: CryptoKey) {
+export function useHealthData(masterKey: CryptoKey | null) {
   const [data, setData] = useState<ParsedCCD[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
+    if (!masterKey) {
+      setData([]);
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
       const stored = await getAllEncryptedHealthData(masterKey);
@@ -59,6 +64,7 @@ export function useHealthData(masterKey: CryptoKey) {
       ccds: ParsedCCD[],
       rawXmls: string[]
     ): Promise<{ imported: number; duplicates: number }> => {
+      if (!masterKey) throw new Error("Vault is locked");
       let imported = 0;
       let duplicates = 0;
 

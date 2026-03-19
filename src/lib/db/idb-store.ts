@@ -9,18 +9,7 @@
  */
 
 import type { ParsedCCD } from "@/lib/ccd/types";
-import { openDB, STORES, idbGet, idbGetAll, idbCount, idbComplete } from "./idb-helpers";
-
-/**
- * Compute a SHA-256 hash of the raw XML for deduplication.
- */
-async function hashContent(content: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(content);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+import { openDB, STORES, idbGet, idbGetAll, idbCount, idbComplete, hashContent } from "./idb-helpers";
 
 export interface DocumentRecord {
   id: string;

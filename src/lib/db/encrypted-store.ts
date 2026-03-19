@@ -9,7 +9,7 @@
 
 import type { ParsedCCD } from "@/lib/ccd/types";
 import { encrypt, decrypt, type EncryptedData } from "@/lib/crypto/encryption";
-import { openDB, STORES, idbGet, idbGetAll, idbCount, idbComplete } from "./idb-helpers";
+import { openDB, STORES, idbGet, idbGetAll, idbCount, idbComplete, hashContent } from "./idb-helpers";
 
 interface DocumentRecord {
   id: string;
@@ -24,14 +24,6 @@ interface DocumentRecord {
 interface EncryptedHealthDataRecord {
   documentId: string;
   data: EncryptedData;
-}
-
-async function hashContent(content: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(content);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**

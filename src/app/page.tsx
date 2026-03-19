@@ -35,7 +35,7 @@ export default function Home() {
     hasData,
     importDocuments,
     clearAllData,
-  } = useHealthData(masterKey!);
+  } = useHealthData(masterKey);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
 
