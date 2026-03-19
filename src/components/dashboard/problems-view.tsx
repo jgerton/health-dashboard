@@ -2,6 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClipboardButton } from "@/components/enrichment/clipboard-button";
+import { formatProblemContext } from "@/lib/enrichment";
 import type { Problem } from "@/lib/ccd/types";
 
 interface ProblemsViewProps {
@@ -56,9 +58,12 @@ export function ProblemsView({ problems, comfort = false }: ProblemsViewProps) {
                       <span className="text-xs text-gray-400 ml-2">{problem.code}</span>
                     )}
                   </div>
-                  <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-                    Active
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <ClipboardButton context={formatProblemContext(problem)} />
+                    <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+                      Active
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>
@@ -87,7 +92,10 @@ export function ProblemsView({ problems, comfort = false }: ProblemsViewProps) {
                       </span>
                     )}
                   </div>
-                  <Badge variant="secondary">{problem.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <ClipboardButton context={formatProblemContext(problem)} />
+                    <Badge variant="secondary">{problem.status}</Badge>
+                  </div>
                 </div>
               ))}
             </div>
