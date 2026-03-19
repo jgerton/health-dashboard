@@ -1,11 +1,12 @@
 "use client";
 
-import { Heart, Upload, Trash2, Shield } from "lucide-react";
+import { Heart, Upload, Trash2, Shield, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   onImportClick: () => void;
   onClearData?: () => void;
+  onLock?: () => void;
   patientName?: string;
   hasData?: boolean;
 }
@@ -13,6 +14,7 @@ interface HeaderProps {
 export function Header({
   onImportClick,
   onClearData,
+  onLock,
   patientName,
   hasData,
 }: HeaderProps) {
@@ -63,6 +65,19 @@ export function Header({
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Clear Data</span>
+              </Button>
+            )}
+
+            {onLock && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLock}
+                className="gap-2"
+                title="Lock vault"
+              >
+                <Lock className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Lock</span>
               </Button>
             )}
           </div>

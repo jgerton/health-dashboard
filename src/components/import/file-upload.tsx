@@ -12,13 +12,16 @@ interface ImportResult {
   duplicate?: boolean;
   error?: string;
   data?: ParsedCCD;
+  icsFile?: boolean;
+  appointmentCount?: number;
 }
 
 interface FileUploadProps {
   onImport: (results: ParsedCCD[], rawXmls: string[]) => void;
+  onImportIcs?: (files: { content: string; name: string }[]) => Promise<{ imported: number; duplicates: number; errors: string[] }>;
 }
 
-export function FileUpload({ onImport }: FileUploadProps) {
+export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [results, setResults] = useState<ImportResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -30,31 +33,48 @@ export function FileUpload({ onImport }: FileUploadProps) {
       const successData: ParsedCCD[] = [];
       const successXmls: string[] = [];
 
-      for (const file of Array.from(files)) {
-        if (!file.name.endsWith(".xml")) {
-          importResults.push({
-            file: file.name,
-            success: false,
-            error: "Not an XML file",
-          });
-          continue;
-        }
+      const icsFiles: { content: string; name: string }[] = [];
 
-        try {
-          const text = await file.text();
-          const parsed = parseCCD(text, file.name);
-          importResults.push({
-            file: file.name,
-            success: true,
-            data: parsed,
-          });
-          successData.push(parsed);
-          successXmls.push(text);
-        } catch (e) {
+      for (const file of Array.from(files)) {
+        if (file.name.endsWith(".xml")) {
+          try {
+            const text = await file.text();
+            const parsed = parseCCD(text, file.name);
+            importResults.push({
+              file: file.name,
+              success: true,
+              data: parsed,
+            });
+            successData.push(parsed);
+            successXmls.push(text);
+          } catch (e) {
+            importResults.push({
+              file: file.name,
+              success: false,
+              error: e instanceof Error ? e.message : "Parse error",
+            });
+          }
+        } else if (file.name.endsWith(".ics")) {
+          try {
+            const text = await file.text();
+            icsFiles.push({ content: text, name: file.name });
+            importResults.push({
+              file: file.name,
+              success: true,
+              icsFile: true,
+            });
+          } catch (e) {
+            importResults.push({
+              file: file.name,
+              success: false,
+              error: e instanceof Error ? e.message : "Read error",
+            });
+          }
+        } else {
           importResults.push({
             file: file.name,
             success: false,
-            error: e instanceof Error ? e.message : "Parse error",
+            error: "Unsupported file type",
           });
         }
       }
@@ -65,8 +85,19 @@ export function FileUpload({ onImport }: FileUploadProps) {
       if (successData.length > 0) {
         onImport(successData, successXmls);
       }
+
+      if (icsFiles.length > 0 && onImportIcs) {
+        const icsResult = await onImportIcs(icsFiles);
+        // Update results with appointment count
+        const updatedResults = importResults.map((r) =>
+          r.icsFile && r.success
+            ? { ...r, appointmentCount: icsResult.imported }
+            : r
+        );
+        setResults(updatedResults);
+      }
     },
-    [onImport]
+    [onImport, onImportIcs]
   );
 
   const handleDrop = useCallback(
@@ -113,7 +144,7 @@ export function FileUpload({ onImport }: FileUploadProps) {
           onClick={() => document.getElementById("file-input")?.click()}
           role="button"
           tabIndex={0}
-          aria-label="Upload CCD/XML health record files"
+          aria-label="Upload health records or calendar files"
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               document.getElementById("file-input")?.click();
@@ -122,10 +153,10 @@ export function FileUpload({ onImport }: FileUploadProps) {
         >
           <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" aria-hidden="true" />
           <p className="text-lg font-medium mb-1">
-            {isProcessing ? "Processing..." : "Drop CCD/XML files here"}
+            {isProcessing ? "Processing..." : "Drop health records or calendar files here"}
           </p>
           <p className="text-sm text-gray-500">
-            or click to browse. Supports CCD, C-CDA, and CCDA XML formats.
+            or click to browse. Supports CCD/XML health records and .ics calendar files.
           </p>
           <p className="text-xs text-gray-400 mt-2">
             All data stays in your browser. Nothing is uploaded to any server.
@@ -133,11 +164,11 @@ export function FileUpload({ onImport }: FileUploadProps) {
           <input
             id="file-input"
             type="file"
-            accept=".xml"
+            accept=".xml,.ics"
             multiple
             className="hidden"
             onChange={handleFileInput}
-            aria-label="Select XML files to upload"
+            aria-label="Select XML or ICS files to upload"
           />
         </div>
 
@@ -188,6 +219,13 @@ export function FileUpload({ onImport }: FileUploadProps) {
                       {result.data.medications.length} meds,{" "}
                       {result.data.results.length} labs,{" "}
                       {result.data.problems.length} problems
+                    </span>
+                  )}
+                  {result.success && result.icsFile && (
+                    <span className="text-gray-400 text-xs ml-auto">
+                      {result.appointmentCount !== undefined
+                        ? `${result.appointmentCount} appointments`
+                        : "calendar file imported"}
                     </span>
                   )}
                 </div>

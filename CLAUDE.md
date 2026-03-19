@@ -24,17 +24,30 @@ Personal health records viewer. Local-first architecture with all health data st
 ### Data Layer (`src/lib/db/`)
 - IndexedDB for persistent browser storage (no SQL needed at current data volumes)
 - SHA-256 deduplication prevents re-importing the same file
-- `useHealthData` hook for React state management with IDB persistence
+- Encrypted storage adapter encrypts ParsedCCD JSON before writing to IDB
+- `useHealthData(masterKey)` hook for React state management with encrypted IDB persistence
 - JS-side aggregation across documents (flatMap, filter, sort)
+- Shared helpers in `idb-helpers.ts` (openDB, STORES, encoding utilities)
 
 ### Charts (`recharts`)
 - Lab trend charts with reference range overlays
 - Color-coded dots (green/amber/blue) by interpretation
 
-### Encryption (`src/lib/crypto/`)
-- AES-256-GCM encryption for data at rest
-- PBKDF2 key derivation from passphrase (600k iterations)
-- Key export/import for backup and transfer
+### Appointments (`src/lib/ics/`)
+- .ics (iCalendar) file parser for appointment import
+- Appointments stored encrypted in IDB `appointments` store
+- Dedup by UID + dateTime combination
+- Doctor name and phone extracted from event description via pattern matching
+- `useAppointments` hook provides React state with upcoming/past/cancelled filtering
+
+### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
+- Required passphrase setup on first use
+- AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)
+- Master key stored wrapped in IDB `meta` store; passphrase change re-wraps without re-encrypting data
+- VaultProvider context gates app behind passphrase screen
+- One-time migration encrypts pre-existing unencrypted data
+- Encrypted exports (v2 format) with separate export passphrase
+- `deleteHealthDataOnly` preserves vault; `deleteAllData` for full factory reset
 
 ## Commands
 
@@ -49,6 +62,11 @@ bun run scripts/test-real-ccd.ts  # Test parser against real CCD files
 ## Testing
 
 - CCD parser tests use synthetic XML fixtures (no real PHI in tests)
+- Encryption tests cover round-trip, unique IV, wrong-key failure, large payloads
+- Key manager tests cover vault init/unlock/lock/change passphrase
+- Encrypted store tests cover store/retrieve, dedup, deleteHealthDataOnly vs deleteAllData
+- Migration tests cover unencrypted-to-encrypted conversion and idempotency
+- `fake-indexeddb` provides IDB in jsdom test environment
 - Real-world validation: `scripts/test-real-ccd.ts` runs against actual CCD files
 - Parser has been validated against 123 real CCD/XML files with 0 errors
 

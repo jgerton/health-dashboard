@@ -9,58 +9,7 @@
  */
 
 import type { ParsedCCD } from "@/lib/ccd/types";
-
-const DB_NAME = "health-dashboard";
-const DB_VERSION = 1;
-
-const STORES = {
-  documents: "documents",
-  healthData: "healthData",
-  meta: "meta",
-} as const;
-
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = () => {
-      const db = request.result;
-
-      // Documents store: keyed by document ID
-      if (!db.objectStoreNames.contains(STORES.documents)) {
-        const docStore = db.createObjectStore(STORES.documents, {
-          keyPath: "id",
-        });
-        docStore.createIndex("sourceFile", "sourceFile", { unique: false });
-        docStore.createIndex("hash", "hash", { unique: true });
-      }
-
-      // Health data store: keyed by document ID, contains full parsed CCD
-      if (!db.objectStoreNames.contains(STORES.healthData)) {
-        db.createObjectStore(STORES.healthData, { keyPath: "documentId" });
-      }
-
-      // Meta store: app settings, encryption keys, etc.
-      if (!db.objectStoreNames.contains(STORES.meta)) {
-        db.createObjectStore(STORES.meta, { keyPath: "key" });
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-/**
- * Compute a SHA-256 hash of the raw XML for deduplication.
- */
-async function hashContent(content: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(content);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+import { openDB, STORES, idbGet, idbGetAll, idbCount, idbComplete, hashContent } from "./idb-helpers";
 
 export interface DocumentRecord {
   id: string;
@@ -87,13 +36,12 @@ export async function storeDocument(
   const db = await openDB();
   const hash = await hashContent(rawXml);
 
-  // Check for duplicate
+  // Check for duplicate by document ID or content hash
   const tx1 = db.transaction(STORES.documents, "readonly");
-  const existingByHash = await idbGet<DocumentRecord>(
-    tx1.objectStore(STORES.documents).index("hash"),
-    hash
-  );
-  if (existingByHash) {
+  const store = tx1.objectStore(STORES.documents);
+  const existingById = await idbGet<DocumentRecord>(store, ccd.documentInfo.id);
+  const existingByHash = await idbGet<DocumentRecord>(store.index("hash"), hash);
+  if (existingById || existingByHash) {
     db.close();
     return false;
   }
@@ -182,39 +130,3 @@ export async function getDocumentCount(): Promise<number> {
   return count;
 }
 
-// --- IDB Promise Helpers ---
-
-function idbGet<T>(
-  source: IDBObjectStore | IDBIndex,
-  key: IDBValidKey
-): Promise<T | undefined> {
-  return new Promise((resolve, reject) => {
-    const request = source.get(key);
-    request.onsuccess = () => resolve(request.result as T | undefined);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function idbGetAll<T>(source: IDBObjectStore): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    const request = source.getAll();
-    request.onsuccess = () => resolve(request.result as T[]);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function idbCount(source: IDBObjectStore): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const request = source.count();
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function idbComplete(tx: IDBTransaction): Promise<void> {
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
-}

@@ -30,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.0",
+    "fake-indexeddb": "^6.2.5",
     "fast-xml-parser": "^5.5.6",
     "jsdom": "^29.0.0",
     "tailwindcss": "^4",
