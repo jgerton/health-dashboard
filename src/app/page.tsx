@@ -20,6 +20,9 @@ import { useAppointments } from "@/lib/hooks/use-appointments";
 import type { ParsedCCD } from "@/lib/ccd/types";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { useVault } from "@/lib/auth";
+import { useComfort } from "@/lib/comfort";
+import { HealthSummaryView } from "@/components/dashboard/health-summary-view";
+import { RecordsView } from "@/components/dashboard/records-view";
 import { PassphraseScreen } from "@/components/auth/passphrase-screen";
 import {
   Dialog,
@@ -42,10 +45,20 @@ export default function Home() {
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
   const [currentView, setCurrentView] = useState<"appointments" | "dashboard">("appointments");
+  const { isComfort } = useComfort();
 
   useEffect(() => {
     registerServiceWorker();
   }, []);
+
+  useEffect(() => {
+    if (isComfort && !["medications", "health-summary", "records", "manage"].includes(activeTab)) {
+      setActiveTab("medications");
+    }
+    if (!isComfort && !["medications", "conditions", "labs", "allergies", "vitals", "immunizations", "visits", "manage"].includes(activeTab)) {
+      setActiveTab("medications");
+    }
+  }, [isComfort]);
 
   const handleImport = useCallback(
     async (results: ParsedCCD[], rawXmls: string[]) => {
@@ -119,52 +132,95 @@ export default function Home() {
             <SummaryCards data={data.summary} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-                <TabsTrigger value="medications">Medications</TabsTrigger>
-                <TabsTrigger value="conditions">Conditions</TabsTrigger>
-                <TabsTrigger value="labs">Lab Results</TabsTrigger>
-                <TabsTrigger value="allergies">Allergies</TabsTrigger>
-                <TabsTrigger value="vitals">Vitals</TabsTrigger>
-                <TabsTrigger value="immunizations">Immunizations</TabsTrigger>
-                <TabsTrigger value="visits">Visits</TabsTrigger>
-                <TabsTrigger value="manage">Manage</TabsTrigger>
-              </TabsList>
+              {isComfort ? (
+                <>
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="medications">Medications</TabsTrigger>
+                    <TabsTrigger value="health-summary">Health Summary</TabsTrigger>
+                    <TabsTrigger value="records">Records</TabsTrigger>
+                    <TabsTrigger value="manage">Manage</TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="medications" className="mt-4">
-                <MedicationsView medications={data.medications} />
-              </TabsContent>
+                  <TabsContent value="medications" className="mt-4">
+                    <MedicationsView medications={data.medications} comfort />
+                  </TabsContent>
 
-              <TabsContent value="conditions" className="mt-4">
-                <ProblemsView problems={data.problems} />
-              </TabsContent>
+                  <TabsContent value="health-summary" className="mt-4">
+                    <HealthSummaryView
+                      problems={data.problems}
+                      allergies={data.allergies}
+                      vitalSigns={data.vitalSigns}
+                      comfort
+                    />
+                  </TabsContent>
 
-              <TabsContent value="labs" className="mt-4">
-                <LabResultsView results={data.results} />
-              </TabsContent>
+                  <TabsContent value="records" className="mt-4">
+                    <RecordsView
+                      results={data.results}
+                      immunizations={data.immunizations}
+                      documents={rawDocuments}
+                      comfort
+                    />
+                  </TabsContent>
 
-              <TabsContent value="allergies" className="mt-4">
-                <AllergiesView allergies={data.allergies} />
-              </TabsContent>
+                  <TabsContent value="manage" className="mt-4">
+                    <DataManagement
+                      masterKey={masterKey!}
+                      documentCount={data.summary.documents}
+                      onDataChange={() => window.location.reload()}
+                    />
+                  </TabsContent>
+                </>
+              ) : (
+                <>
+                  <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+                    <TabsTrigger value="medications">Medications</TabsTrigger>
+                    <TabsTrigger value="conditions">Conditions</TabsTrigger>
+                    <TabsTrigger value="labs">Lab Results</TabsTrigger>
+                    <TabsTrigger value="allergies">Allergies</TabsTrigger>
+                    <TabsTrigger value="vitals">Vitals</TabsTrigger>
+                    <TabsTrigger value="immunizations">Immunizations</TabsTrigger>
+                    <TabsTrigger value="visits">Visits</TabsTrigger>
+                    <TabsTrigger value="manage">Manage</TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="vitals" className="mt-4">
-                <VitalsView vitalSigns={data.vitalSigns} />
-              </TabsContent>
+                  <TabsContent value="medications" className="mt-4">
+                    <MedicationsView medications={data.medications} />
+                  </TabsContent>
 
-              <TabsContent value="immunizations" className="mt-4">
-                <ImmunizationsView immunizations={data.immunizations} />
-              </TabsContent>
+                  <TabsContent value="conditions" className="mt-4">
+                    <ProblemsView problems={data.problems} />
+                  </TabsContent>
 
-              <TabsContent value="visits" className="mt-4">
-                <VisitsView documents={rawDocuments} />
-              </TabsContent>
+                  <TabsContent value="labs" className="mt-4">
+                    <LabResultsView results={data.results} />
+                  </TabsContent>
 
-              <TabsContent value="manage" className="mt-4">
-                <DataManagement
-                  masterKey={masterKey!}
-                  documentCount={data.summary.documents}
-                  onDataChange={() => window.location.reload()}
-                />
-              </TabsContent>
+                  <TabsContent value="allergies" className="mt-4">
+                    <AllergiesView allergies={data.allergies} />
+                  </TabsContent>
+
+                  <TabsContent value="vitals" className="mt-4">
+                    <VitalsView vitalSigns={data.vitalSigns} />
+                  </TabsContent>
+
+                  <TabsContent value="immunizations" className="mt-4">
+                    <ImmunizationsView immunizations={data.immunizations} />
+                  </TabsContent>
+
+                  <TabsContent value="visits" className="mt-4">
+                    <VisitsView documents={rawDocuments} />
+                  </TabsContent>
+
+                  <TabsContent value="manage" className="mt-4">
+                    <DataManagement
+                      masterKey={masterKey!}
+                      documentCount={data.summary.documents}
+                      onDataChange={() => window.location.reload()}
+                    />
+                  </TabsContent>
+                </>
+              )}
             </Tabs>
           </div>
         )}
