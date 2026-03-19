@@ -51,6 +51,14 @@ Personal health records viewer. Local-first architecture with all health data st
 - "View Health Records" navigates to tabbed dashboard
 - Header toggle switches between appointments and dashboard views
 
+### Comfort Mode (`src/lib/comfort/`)
+- ComfortModeProvider persists toggle in IDB `meta` store
+- Standard mode: 8 tabs, full information density
+- Comfort mode: 4 tabs (Medications, Health Summary, Records, Manage), larger text, hidden codes
+- View components accept `comfort?: boolean` prop to control info density
+- HealthSummaryView merges conditions + allergies + vitals
+- RecordsView merges labs + immunizations + visits
+
 ### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
 - Required passphrase setup on first use
 - AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)
