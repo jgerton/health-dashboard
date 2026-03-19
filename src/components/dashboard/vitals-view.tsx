@@ -1,6 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClipboardButton } from "@/components/enrichment/clipboard-button";
+import { formatVitalsContext } from "@/lib/enrichment";
 import type { VitalSign } from "@/lib/ccd/types";
 
 interface VitalsViewProps {
@@ -15,8 +17,9 @@ export function VitalsView({ vitalSigns, comfort = false }: VitalsViewProps) {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Vital Signs</CardTitle>
+        <ClipboardButton context={formatVitalsContext(vitalSigns)} label="Analyze Trends" size="sm" mode="session" />
       </CardHeader>
       <CardContent>
         {sorted.length === 0 ? (

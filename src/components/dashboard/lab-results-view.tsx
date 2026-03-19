@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp } from "lucide-react";
 import { LabTrendChart } from "./lab-trend-chart";
+import { ClipboardButton } from "@/components/enrichment/clipboard-button";
+import { formatLabContext } from "@/lib/enrichment";
 import type { LabResult, LabObservation } from "@/lib/ccd/types";
 
 interface LabResultsViewProps {
@@ -153,6 +155,7 @@ export function LabResultsView({ results, comfort = false }: LabResultsViewProps
                       {!comfort && panel.panelCode && (
                         <span className="text-xs text-gray-400">{panel.panelCode}</span>
                       )}
+                      <ClipboardButton context={formatLabContext(panel)} label="Explain" size="sm" />
                     </div>
                     <span className="text-sm text-gray-500">
                       {formatDate(panel.date)}
