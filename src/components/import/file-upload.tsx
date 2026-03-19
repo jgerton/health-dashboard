@@ -14,14 +14,17 @@ interface ImportResult {
   data?: ParsedCCD;
   icsFile?: boolean;
   appointmentCount?: number;
+  enrichmentFile?: boolean;
+  enrichmentCounts?: { annotations: number; insights: number };
 }
 
 interface FileUploadProps {
   onImport: (results: ParsedCCD[], rawXmls: string[]) => void;
   onImportIcs?: (files: { content: string; name: string }[]) => Promise<{ imported: number; duplicates: number; errors: string[] }>;
+  onImportEnrichment?: (data: string) => Promise<{ annotations: number; insights: number }>;
 }
 
-export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
+export function FileUpload({ onImport, onImportIcs, onImportEnrichment }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [results, setResults] = useState<ImportResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,6 +55,31 @@ export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
               file: file.name,
               success: false,
               error: e instanceof Error ? e.message : "Parse error",
+            });
+          }
+        } else if (file.name.endsWith(".enrichment.json")) {
+          try {
+            const text = await file.text();
+            if (onImportEnrichment) {
+              const counts = await onImportEnrichment(text);
+              importResults.push({
+                file: file.name,
+                success: true,
+                enrichmentFile: true,
+                enrichmentCounts: counts,
+              });
+            } else {
+              importResults.push({
+                file: file.name,
+                success: false,
+                error: "Enrichment import not available",
+              });
+            }
+          } catch (e) {
+            importResults.push({
+              file: file.name,
+              success: false,
+              error: e instanceof Error ? e.message : "Import error",
             });
           }
         } else if (file.name.endsWith(".ics")) {
@@ -97,7 +125,7 @@ export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
         setResults(updatedResults);
       }
     },
-    [onImport, onImportIcs]
+    [onImport, onImportIcs, onImportEnrichment]
   );
 
   const handleDrop = useCallback(
@@ -164,7 +192,7 @@ export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
           <input
             id="file-input"
             type="file"
-            accept=".xml,.ics"
+            accept=".xml,.ics,.enrichment.json"
             multiple
             className="hidden"
             onChange={handleFileInput}
@@ -226,6 +254,13 @@ export function FileUpload({ onImport, onImportIcs }: FileUploadProps) {
                       {result.appointmentCount !== undefined
                         ? `${result.appointmentCount} appointments`
                         : "calendar file imported"}
+                    </span>
+                  )}
+                  {result.success && result.enrichmentFile && (
+                    <span className="text-gray-400 text-xs ml-auto">
+                      {result.enrichmentCounts
+                        ? `${result.enrichmentCounts.annotations} annotations, ${result.enrichmentCounts.insights} insights`
+                        : "enrichments imported"}
                     </span>
                   )}
                 </div>
