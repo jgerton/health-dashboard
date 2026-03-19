@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { ParsedCCD, Medication, LabResult, Problem, Allergy, VitalSign, Immunization } from "@/lib/ccd/types";
+import { extractFollowUps, type FollowUp } from "@/lib/ccd/follow-ups";
 import {
   storeEncryptedDocument,
   getAllEncryptedHealthData,
@@ -27,6 +28,7 @@ export interface AggregatedHealthData {
   allergies: Allergy[];
   vitalSigns: VitalSign[];
   immunizations: Immunization[];
+  followUps: FollowUp[];
   patientName?: string;
   summary: HealthDataSummary;
 }
@@ -97,6 +99,7 @@ export function useHealthData(masterKey: CryptoKey | null) {
     allergies: data.flatMap((d) => d.allergies),
     vitalSigns: data.flatMap((d) => d.vitalSigns),
     immunizations: data.flatMap((d) => d.immunizations),
+    followUps: data.flatMap((d) => extractFollowUps(d)),
     patientName: data[0]?.patient.name,
     summary: {
       documents: data.length,
