@@ -30,7 +30,7 @@ A personal health records viewer built with a local-first architecture. Import y
 
 ```bash
 # Clone and install
-git clone https://github.com/jongerton/health-dashboard.git
+git clone https://github.com/jgerton/health-dashboard.git
 cd health-dashboard
 bun install
 
