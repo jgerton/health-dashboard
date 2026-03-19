@@ -139,11 +139,12 @@ export { deleteAllData } from "./idb-store";
 export async function deleteHealthDataOnly(): Promise<void> {
   const db = await openDB();
   const tx = db.transaction(
-    [STORES.documents, STORES.healthData],
+    [STORES.documents, STORES.healthData, STORES.appointments],
     "readwrite"
   );
   tx.objectStore(STORES.documents).clear();
   tx.objectStore(STORES.healthData).clear();
+  tx.objectStore(STORES.appointments).clear();
   await idbComplete(tx);
   db.close();
 }

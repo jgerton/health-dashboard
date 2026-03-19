@@ -33,6 +33,13 @@ Personal health records viewer. Local-first architecture with all health data st
 - Lab trend charts with reference range overlays
 - Color-coded dots (green/amber/blue) by interpretation
 
+### Appointments (`src/lib/ics/`)
+- .ics (iCalendar) file parser for appointment import
+- Appointments stored encrypted in IDB `appointments` store
+- Dedup by UID + dateTime combination
+- Doctor name and phone extracted from event description via pattern matching
+- `useAppointments` hook provides React state with upcoming/past/cancelled filtering
+
 ### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
 - Required passphrase setup on first use
 - AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)
