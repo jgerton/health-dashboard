@@ -70,6 +70,18 @@ describe("encrypted-store", () => {
       expect(allData).toHaveLength(1);
     });
 
+    it("deduplicates by document ID even with different content", async () => {
+      const key = await generateKey();
+      const ccd = makeFakeCCD("doc-1");
+
+      await storeEncryptedDocument(ccd, "<xml>version-1</xml>", key);
+      const wasNew = await storeEncryptedDocument(ccd, "<xml>version-2</xml>", key);
+      expect(wasNew).toBe(false);
+
+      const allData = await getAllEncryptedHealthData(key);
+      expect(allData).toHaveLength(1);
+    });
+
     it("stores multiple documents", async () => {
       const key = await generateKey();
       await storeEncryptedDocument(makeFakeCCD("a"), "<xml>a</xml>", key);

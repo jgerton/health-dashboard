@@ -36,13 +36,12 @@ export async function storeDocument(
   const db = await openDB();
   const hash = await hashContent(rawXml);
 
-  // Check for duplicate
+  // Check for duplicate by document ID or content hash
   const tx1 = db.transaction(STORES.documents, "readonly");
-  const existingByHash = await idbGet<DocumentRecord>(
-    tx1.objectStore(STORES.documents).index("hash"),
-    hash
-  );
-  if (existingByHash) {
+  const store = tx1.objectStore(STORES.documents);
+  const existingById = await idbGet<DocumentRecord>(store, ccd.documentInfo.id);
+  const existingByHash = await idbGet<DocumentRecord>(store.index("hash"), hash);
+  if (existingById || existingByHash) {
     db.close();
     return false;
   }
