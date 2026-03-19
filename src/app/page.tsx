@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/layout/header";
 import { FileUpload } from "@/components/import/file-upload";
@@ -11,6 +11,7 @@ import { LabResultsView } from "@/components/dashboard/lab-results-view";
 import { AllergiesView } from "@/components/dashboard/allergies-view";
 import { VitalsView } from "@/components/dashboard/vitals-view";
 import { ImmunizationsView } from "@/components/dashboard/immunizations-view";
+import { useHealthData } from "@/lib/hooks/use-health-data";
 import type { ParsedCCD } from "@/lib/ccd/types";
 import {
   Dialog,
@@ -20,42 +21,30 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Home() {
-  const [importedData, setImportedData] = useState<ParsedCCD[]>([]);
+  const { data, isLoading, hasData, importDocuments } = useHealthData();
   const [showImport, setShowImport] = useState(false);
 
-  const handleImport = useCallback((results: ParsedCCD[]) => {
-    setImportedData((prev) => [...prev, ...results]);
-    // Close dialog after short delay to show results
-    setTimeout(() => setShowImport(false), 1500);
-  }, []);
+  const handleImport = useCallback(
+    async (results: ParsedCCD[], rawXmls: string[]) => {
+      await importDocuments(results, rawXmls);
+      setTimeout(() => setShowImport(false), 1000);
+    },
+    [importDocuments]
+  );
 
-  // Aggregate data across all imported documents
-  const allMedications = importedData.flatMap((d) => d.medications);
-  const allResults = importedData.flatMap((d) => d.results);
-  const allProblems = importedData.flatMap((d) => d.problems);
-  const allAllergies = importedData.flatMap((d) => d.allergies);
-  const allVitalSigns = importedData.flatMap((d) => d.vitalSigns);
-  const allImmunizations = importedData.flatMap((d) => d.immunizations);
-
-  const summary = {
-    medications: allMedications.length,
-    activeMedications: allMedications.filter((m) => m.status === "active").length,
-    labResults: allResults.length,
-    problems: allProblems.length,
-    activeProblems: allProblems.filter((p) => p.status === "active").length,
-    allergies: allAllergies.length,
-    vitalSigns: allVitalSigns.length,
-    immunizations: allImmunizations.length,
-  };
-
-  const patientName = importedData[0]?.patient.name;
-  const hasData = importedData.length > 0;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading health data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
         onImportClick={() => setShowImport(true)}
-        patientName={patientName}
+        patientName={data.patientName}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -70,7 +59,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-6">
-            <SummaryCards data={summary} />
+            <SummaryCards data={data.summary} />
 
             <Tabs defaultValue="medications" className="w-full">
               <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
@@ -83,27 +72,27 @@ export default function Home() {
               </TabsList>
 
               <TabsContent value="medications" className="mt-4">
-                <MedicationsView medications={allMedications} />
+                <MedicationsView medications={data.medications} />
               </TabsContent>
 
               <TabsContent value="conditions" className="mt-4">
-                <ProblemsView problems={allProblems} />
+                <ProblemsView problems={data.problems} />
               </TabsContent>
 
               <TabsContent value="labs" className="mt-4">
-                <LabResultsView results={allResults} />
+                <LabResultsView results={data.results} />
               </TabsContent>
 
               <TabsContent value="allergies" className="mt-4">
-                <AllergiesView allergies={allAllergies} />
+                <AllergiesView allergies={data.allergies} />
               </TabsContent>
 
               <TabsContent value="vitals" className="mt-4">
-                <VitalsView vitalSigns={allVitalSigns} />
+                <VitalsView vitalSigns={data.vitalSigns} />
               </TabsContent>
 
               <TabsContent value="immunizations" className="mt-4">
-                <ImmunizationsView immunizations={allImmunizations} />
+                <ImmunizationsView immunizations={data.immunizations} />
               </TabsContent>
             </Tabs>
           </div>

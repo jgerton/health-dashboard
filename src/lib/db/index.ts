@@ -1,2 +1,9 @@
-export { HealthStore, type SQLiteDB } from "./health-store";
-export { CREATE_TABLES_SQL, SCHEMA_VERSION } from "./schema";
+export {
+  storeDocument,
+  getDocuments,
+  getAllHealthData,
+  deleteAllData,
+  getDocumentCount,
+  type DocumentRecord,
+  type HealthDataRecord,
+} from "./idb-store";

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Upload, FileText, CheckCircle, AlertCircle, Copy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseCCD } from "@/lib/ccd/parser";
 import type { ParsedCCD } from "@/lib/ccd/types";
@@ -10,12 +9,13 @@ import type { ParsedCCD } from "@/lib/ccd/types";
 interface ImportResult {
   file: string;
   success: boolean;
+  duplicate?: boolean;
   error?: string;
   data?: ParsedCCD;
 }
 
 interface FileUploadProps {
-  onImport: (results: ParsedCCD[]) => void;
+  onImport: (results: ParsedCCD[], rawXmls: string[]) => void;
 }
 
 export function FileUpload({ onImport }: FileUploadProps) {
@@ -28,6 +28,7 @@ export function FileUpload({ onImport }: FileUploadProps) {
       setIsProcessing(true);
       const importResults: ImportResult[] = [];
       const successData: ParsedCCD[] = [];
+      const successXmls: string[] = [];
 
       for (const file of Array.from(files)) {
         if (!file.name.endsWith(".xml")) {
@@ -48,6 +49,7 @@ export function FileUpload({ onImport }: FileUploadProps) {
             data: parsed,
           });
           successData.push(parsed);
+          successXmls.push(text);
         } catch (e) {
           importResults.push({
             file: file.name,
@@ -61,7 +63,7 @@ export function FileUpload({ onImport }: FileUploadProps) {
       setIsProcessing(false);
 
       if (successData.length > 0) {
-        onImport(successData);
+        onImport(successData, successXmls);
       }
     },
     [onImport]
@@ -125,6 +127,9 @@ export function FileUpload({ onImport }: FileUploadProps) {
           <p className="text-sm text-gray-500">
             or click to browse. Supports CCD, C-CDA, and CCDA XML formats.
           </p>
+          <p className="text-xs text-gray-400 mt-2">
+            All data stays in your browser. Nothing is uploaded to any server.
+          </p>
           <input
             id="file-input"
             type="file"
@@ -158,7 +163,11 @@ export function FileUpload({ onImport }: FileUploadProps) {
                   className="flex items-center gap-2 text-sm py-1.5 px-3 rounded bg-gray-50"
                 >
                   {result.success ? (
-                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0" aria-hidden="true" />
+                    result.duplicate ? (
+                      <Copy className="h-4 w-4 text-gray-400 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <CheckCircle className="h-4 w-4 text-green-500 shrink-0" aria-hidden="true" />
+                    )
                   ) : (
                     <AlertCircle className="h-4 w-4 text-red-500 shrink-0" aria-hidden="true" />
                   )}
@@ -169,7 +178,12 @@ export function FileUpload({ onImport }: FileUploadProps) {
                       {result.error}
                     </span>
                   )}
-                  {result.success && result.data && (
+                  {result.duplicate && (
+                    <span className="text-gray-400 text-xs ml-auto">
+                      already imported
+                    </span>
+                  )}
+                  {result.success && !result.duplicate && result.data && (
                     <span className="text-gray-400 text-xs ml-auto">
                       {result.data.medications.length} meds,{" "}
                       {result.data.results.length} labs,{" "}
