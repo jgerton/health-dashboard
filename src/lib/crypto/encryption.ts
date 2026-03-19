@@ -3,7 +3,7 @@
  * Uses AES-256-GCM for authenticated encryption at rest.
  *
  * Key derivation: PBKDF2 from user passphrase (or generated key for passkey users).
- * All health data is encrypted before storage in wa-sqlite/OPFS.
+ * All health data is encrypted before storage in IndexedDB.
  */
 
 const ALGORITHM = "AES-GCM";
