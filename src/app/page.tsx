@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/layout/header";
 import { FileUpload } from "@/components/import/file-upload";
@@ -12,8 +12,11 @@ import { AllergiesView } from "@/components/dashboard/allergies-view";
 import { VitalsView } from "@/components/dashboard/vitals-view";
 import { ImmunizationsView } from "@/components/dashboard/immunizations-view";
 import { SearchBar } from "@/components/dashboard/search-bar";
+import { VisitsView } from "@/components/dashboard/visits-view";
+import { DataManagement } from "@/components/dashboard/data-management";
 import { useHealthData } from "@/lib/hooks/use-health-data";
 import type { ParsedCCD } from "@/lib/ccd/types";
+import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +25,20 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Home() {
-  const { data, isLoading, hasData, importDocuments, clearAllData } = useHealthData();
+  const {
+    data,
+    rawDocuments,
+    isLoading,
+    hasData,
+    importDocuments,
+    clearAllData,
+  } = useHealthData();
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   const handleImport = useCallback(
     async (results: ParsedCCD[], rawXmls: string[]) => {
@@ -67,13 +81,15 @@ export default function Home() {
             <SummaryCards data={data.summary} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
                 <TabsTrigger value="medications">Medications</TabsTrigger>
                 <TabsTrigger value="conditions">Conditions</TabsTrigger>
                 <TabsTrigger value="labs">Lab Results</TabsTrigger>
                 <TabsTrigger value="allergies">Allergies</TabsTrigger>
                 <TabsTrigger value="vitals">Vitals</TabsTrigger>
                 <TabsTrigger value="immunizations">Immunizations</TabsTrigger>
+                <TabsTrigger value="visits">Visits</TabsTrigger>
+                <TabsTrigger value="manage">Manage</TabsTrigger>
               </TabsList>
 
               <TabsContent value="medications" className="mt-4">
@@ -98,6 +114,17 @@ export default function Home() {
 
               <TabsContent value="immunizations" className="mt-4">
                 <ImmunizationsView immunizations={data.immunizations} />
+              </TabsContent>
+
+              <TabsContent value="visits" className="mt-4">
+                <VisitsView documents={rawDocuments} />
+              </TabsContent>
+
+              <TabsContent value="manage" className="mt-4">
+                <DataManagement
+                  documentCount={data.summary.documents}
+                  onDataChange={() => window.location.reload()}
+                />
               </TabsContent>
             </Tabs>
           </div>

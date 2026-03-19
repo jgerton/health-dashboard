@@ -10,6 +10,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Health Dashboard",
   description: "Personal health records viewer. All data stays in your browser.",
+  manifest: "/manifest.json",
+  themeColor: "#ef4444",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Health Dashboard",
+  },
 };
 
 export default function RootLayout({
