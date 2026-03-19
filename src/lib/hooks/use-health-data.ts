@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { ParsedCCD, Medication, LabResult, Problem, Allergy, VitalSign, Immunization } from "@/lib/ccd/types";
-import { storeDocument, getAllHealthData, deleteAllData, getDocumentCount } from "@/lib/db/idb-store";
+import {
+  storeEncryptedDocument,
+  getAllEncryptedHealthData,
+  deleteHealthDataOnly,
+} from "@/lib/db";
 
 export interface HealthDataSummary {
   documents: number;
@@ -27,20 +31,15 @@ export interface AggregatedHealthData {
   summary: HealthDataSummary;
 }
 
-export function useHealthData() {
+export function useHealthData(masterKey: CryptoKey) {
   const [data, setData] = useState<ParsedCCD[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load persisted data on mount
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const stored = await getAllHealthData();
+      const stored = await getAllEncryptedHealthData(masterKey);
       setData(stored);
       setError(null);
     } catch (e) {
@@ -48,7 +47,12 @@ export function useHealthData() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [masterKey]);
+
+  // Load persisted data on mount (and when masterKey changes)
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const importDocuments = useCallback(
     async (
@@ -59,7 +63,7 @@ export function useHealthData() {
       let duplicates = 0;
 
       for (let i = 0; i < ccds.length; i++) {
-        const wasNew = await storeDocument(ccds[i], rawXmls[i]);
+        const wasNew = await storeEncryptedDocument(ccds[i], rawXmls[i], masterKey);
         if (wasNew) {
           imported++;
         } else {
@@ -71,11 +75,11 @@ export function useHealthData() {
       await loadData();
       return { imported, duplicates };
     },
-    [loadData]
+    [loadData, masterKey]
   );
 
   const clearAllData = useCallback(async () => {
-    await deleteAllData();
+    await deleteHealthDataOnly();
     setData([]);
   }, []);
 

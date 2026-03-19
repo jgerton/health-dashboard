@@ -17,6 +17,8 @@ import { DataManagement } from "@/components/dashboard/data-management";
 import { useHealthData } from "@/lib/hooks/use-health-data";
 import type { ParsedCCD } from "@/lib/ccd/types";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
+import { useVault } from "@/lib/auth";
+import { PassphraseScreen } from "@/components/auth/passphrase-screen";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Home() {
+  const { state: vaultState, masterKey, lock } = useVault();
   const {
     data,
     rawDocuments,
@@ -32,7 +35,7 @@ export default function Home() {
     hasData,
     importDocuments,
     clearAllData,
-  } = useHealthData();
+  } = useHealthData(masterKey!);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
 
@@ -48,6 +51,18 @@ export default function Home() {
     [importDocuments]
   );
 
+  if (vaultState === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
+  if (vaultState === "uninitialized" || vaultState === "locked") {
+    return <PassphraseScreen />;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -61,6 +76,7 @@ export default function Home() {
       <Header
         onImportClick={() => setShowImport(true)}
         onClearData={clearAllData}
+        onLock={lock}
         patientName={data.patientName}
         hasData={hasData}
       />
@@ -122,6 +138,7 @@ export default function Home() {
 
               <TabsContent value="manage" className="mt-4">
                 <DataManagement
+                  masterKey={masterKey!}
                   documentCount={data.summary.documents}
                   onDataChange={() => window.location.reload()}
                 />
