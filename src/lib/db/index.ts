@@ -15,3 +15,9 @@ export {
   getEncryptedDocumentCount,
   deleteHealthDataOnly,
 } from "./encrypted-store";
+
+export {
+  exportEncryptedData,
+  importEncryptedData,
+  type EncryptedExportPayload,
+} from "./encrypted-export";
