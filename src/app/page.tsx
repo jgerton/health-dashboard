@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/layout/header";
 import { FileUpload } from "@/components/import/file-upload";
@@ -11,6 +11,7 @@ import { LabResultsView } from "@/components/dashboard/lab-results-view";
 import { AllergiesView } from "@/components/dashboard/allergies-view";
 import { VitalsView } from "@/components/dashboard/vitals-view";
 import { ImmunizationsView } from "@/components/dashboard/immunizations-view";
+import { SearchBar } from "@/components/dashboard/search-bar";
 import { useHealthData } from "@/lib/hooks/use-health-data";
 import type { ParsedCCD } from "@/lib/ccd/types";
 import {
@@ -21,8 +22,9 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Home() {
-  const { data, isLoading, hasData, importDocuments } = useHealthData();
+  const { data, isLoading, hasData, importDocuments, clearAllData } = useHealthData();
   const [showImport, setShowImport] = useState(false);
+  const [activeTab, setActiveTab] = useState("medications");
 
   const handleImport = useCallback(
     async (results: ParsedCCD[], rawXmls: string[]) => {
@@ -44,7 +46,9 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Header
         onImportClick={() => setShowImport(true)}
+        onClearData={clearAllData}
         patientName={data.patientName}
+        hasData={hasData}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -59,9 +63,10 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-6">
+            <SearchBar data={data} onNavigate={setActiveTab} />
             <SummaryCards data={data.summary} />
 
-            <Tabs defaultValue="medications" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
                 <TabsTrigger value="medications">Medications</TabsTrigger>
                 <TabsTrigger value="conditions">Conditions</TabsTrigger>

@@ -8,7 +8,7 @@ Personal health records viewer. Local-first architecture with all health data st
 
 - **Framework:** Next.js 16 (App Router, TypeScript)
 - **UI:** shadcn/ui + Tailwind CSS
-- **Database:** wa-sqlite + OPFS (browser-local, in-memory for dev)
+- **Storage:** IndexedDB (browser-local, persistent)
 - **Encryption:** Web Crypto API (AES-256-GCM)
 - **Testing:** Vitest + jsdom
 - **Package Manager:** Bun
@@ -22,10 +22,14 @@ Personal health records viewer. Local-first architecture with all health data st
 - Sections: medications, results, problems, allergies, vital signs, immunizations
 
 ### Data Layer (`src/lib/db/`)
-- SQLite schema with proper indexes and foreign keys
-- HealthStore class with typed query methods
-- Browser implementation uses in-memory store (wa-sqlite OPFS planned)
-- Document deduplication via SHA-256 hash
+- IndexedDB for persistent browser storage (no SQL needed at current data volumes)
+- SHA-256 deduplication prevents re-importing the same file
+- `useHealthData` hook for React state management with IDB persistence
+- JS-side aggregation across documents (flatMap, filter, sort)
+
+### Charts (`recharts`)
+- Lab trend charts with reference range overlays
+- Color-coded dots (green/amber/blue) by interpretation
 
 ### Encryption (`src/lib/crypto/`)
 - AES-256-GCM encryption for data at rest

@@ -1,14 +1,21 @@
 "use client";
 
-import { Heart, Upload, Menu } from "lucide-react";
+import { Heart, Upload, Trash2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   onImportClick: () => void;
+  onClearData?: () => void;
   patientName?: string;
+  hasData?: boolean;
 }
 
-export function Header({ onImportClick, patientName }: HeaderProps) {
+export function Header({
+  onImportClick,
+  onClearData,
+  patientName,
+  hasData,
+}: HeaderProps) {
   return (
     <header className="border-b bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +30,12 @@ export function Header({ onImportClick, patientName }: HeaderProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400 mr-2">
+              <Shield className="h-3 w-3" aria-hidden="true" />
+              <span>Local only</span>
+            </div>
+
             <Button
               variant="outline"
               size="sm"
@@ -31,8 +43,28 @@ export function Header({ onImportClick, patientName }: HeaderProps) {
               className="gap-2"
             >
               <Upload className="h-4 w-4" aria-hidden="true" />
-              <span>Import Records</span>
+              <span>Import</span>
             </Button>
+
+            {hasData && onClearData && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Delete all imported health data? This cannot be undone."
+                    )
+                  ) {
+                    onClearData();
+                  }
+                }}
+                className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Clear Data</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
