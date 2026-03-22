@@ -2,6 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClipboardButton } from "@/components/enrichment/clipboard-button";
+import { formatMedicationContext, formatMedicationListContext } from "@/lib/enrichment";
 import type { Medication } from "@/lib/ccd/types";
 
 interface MedicationsViewProps {
@@ -42,8 +44,9 @@ export function MedicationsView({ medications, comfort = false }: MedicationsVie
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Medications</CardTitle>
+        <ClipboardButton context={formatMedicationListContext(medications)} label="Check Interactions" size="sm" mode="session" />
       </CardHeader>
       <CardContent>
         {uniqueActive.length > 0 && (
@@ -105,6 +108,7 @@ function MedicationRow({ medication, comfort = false }: { medication: Medication
           <span className="text-xs text-gray-400">{medication.code}</span>
         )}
       </div>
+      <ClipboardButton context={formatMedicationContext(medication)} />
     </div>
   );
 }

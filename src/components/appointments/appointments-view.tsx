@@ -7,12 +7,15 @@ import { AppointmentCard } from "./appointment-card";
 import { FollowUpCard } from "./follow-up-card";
 import type { Appointment } from "@/lib/ics/types";
 import type { FollowUp } from "@/lib/ccd/follow-ups";
+import type { Insight } from "@/lib/enrichment/types";
+import { InsightsSection } from "@/components/enrichment/insights-section";
 
 interface AppointmentsViewProps {
   upcoming: Appointment[];
   past: Appointment[];
   cancelled: Appointment[];
   followUps: FollowUp[];
+  insights?: Insight[];
   onViewRecords: () => void;
   onImportClick: () => void;
 }
@@ -22,11 +25,12 @@ export function AppointmentsView({
   past,
   cancelled,
   followUps,
+  insights,
   onViewRecords,
   onImportClick,
 }: AppointmentsViewProps) {
   const [showPast, setShowPast] = useState(false);
-  const hasAnyContent = upcoming.length > 0 || followUps.length > 0 || past.length > 0;
+  const hasAnyContent = upcoming.length > 0 || followUps.length > 0 || past.length > 0 || (insights?.length ?? 0) > 0;
 
   if (!hasAnyContent) {
     return (
@@ -72,6 +76,11 @@ export function AppointmentsView({
             ))}
           </div>
         </section>
+      )}
+
+      {/* AI Insights */}
+      {insights && insights.length > 0 && (
+        <InsightsSection insights={insights} />
       )}
 
       {/* Cancelled */}
