@@ -17,6 +17,7 @@ import { DataManagement } from "@/components/dashboard/data-management";
 import { AppointmentsView } from "@/components/appointments/appointments-view";
 import { useHealthData } from "@/lib/hooks/use-health-data";
 import { useAppointments } from "@/lib/hooks/use-appointments";
+import { useEnrichments } from "@/lib/hooks/use-enrichments";
 import type { ParsedCCD } from "@/lib/ccd/types";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { useVault } from "@/lib/auth";
@@ -42,6 +43,7 @@ export default function Home() {
     clearAllData,
   } = useHealthData(masterKey);
   const { upcoming, past, cancelled, importIcsFiles } = useAppointments(masterKey);
+  const { importEnrichmentJson } = useEnrichments(masterKey);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState("medications");
   const [currentView, setCurrentView] = useState<"appointments" | "dashboard">("appointments");
@@ -112,6 +114,11 @@ export default function Home() {
               onImport={handleImport}
               onImportIcs={async (files) => {
                 const result = await importIcsFiles(files);
+                setTimeout(() => setShowImport(false), 1000);
+                return result;
+              }}
+              onImportEnrichment={async (data) => {
+                const result = await importEnrichmentJson(data);
                 setTimeout(() => setShowImport(false), 1000);
                 return result;
               }}
@@ -235,6 +242,11 @@ export default function Home() {
             onImport={handleImport}
             onImportIcs={async (files) => {
               const result = await importIcsFiles(files);
+              setTimeout(() => setShowImport(false), 1000);
+              return result;
+            }}
+            onImportEnrichment={async (data) => {
+              const result = await importEnrichmentJson(data);
               setTimeout(() => setShowImport(false), 1000);
               return result;
             }}

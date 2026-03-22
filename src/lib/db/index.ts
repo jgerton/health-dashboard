@@ -27,3 +27,13 @@ export {
   getAllEncryptedAppointments,
   deleteAppointment,
 } from "./encrypted-appointments";
+
+export {
+  storeEncryptedAnnotation,
+  getAllEncryptedAnnotations,
+  getAnnotationsForRecord,
+  storeEncryptedInsight,
+  getAllEncryptedInsights,
+  deleteAnnotation,
+  deleteInsight,
+} from "./encrypted-enrichments";

@@ -59,6 +59,19 @@ Personal health records viewer. Local-first architecture with all health data st
 - HealthSummaryView merges conditions + allergies + vitals
 - RecordsView merges labs + immunizations + visits
 
+### Enrichments (`src/lib/enrichment/`, `src/lib/db/encrypted-enrichments.ts`)
+- Annotations: per-record explainers (lab explanations, medication reviews) tagged to surface on relevant tabs
+- Insights: cross-record analyses (trends, patterns) displayed on landing page and tagged tabs
+- Encrypted in IDB `annotations` and `insights` stores (v3 migration)
+- Imported via `.enrichment.json` files from CLI enrichment skill
+- `useEnrichments` hook provides React state with record and tag filtering
+
+### PHI Scrubber (`src/lib/scrub/`)
+- Strips patient-identifiable fields before outbound API calls
+- Removes: name, DOB, address, document IDs, source filenames
+- Preserves: clinical values, dates of service, medical codes, provider names
+- Pure function, no side effects
+
 ### Auth & Encryption (`src/lib/auth/`, `src/lib/crypto/`)
 - Required passphrase setup on first use
 - AES-256-GCM master key wrapped with PBKDF2-derived key (600k iterations)

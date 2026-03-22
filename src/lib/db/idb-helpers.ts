@@ -6,13 +6,15 @@
  */
 
 const DB_NAME = "health-dashboard";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export const STORES = {
   documents: "documents",
   healthData: "healthData",
   meta: "meta",
   appointments: "appointments",
+  annotations: "annotations",
+  insights: "insights",
 } as const;
 
 export function openDB(): Promise<IDBDatabase> {
@@ -42,6 +44,20 @@ export function openDB(): Promise<IDBDatabase> {
         });
         apptStore.createIndex("uid", "uid", { unique: false });
         apptStore.createIndex("dateTime", "dateTime", { unique: false });
+      }
+
+      // v2 -> v3: Add annotations and insights stores
+      if (oldVersion < 3) {
+        const annotStore = db.createObjectStore(STORES.annotations, {
+          keyPath: "id",
+        });
+        annotStore.createIndex("recordId", "recordId", { unique: false });
+        annotStore.createIndex("tags", "tags", { unique: false, multiEntry: true });
+
+        const insightStore = db.createObjectStore(STORES.insights, {
+          keyPath: "id",
+        });
+        insightStore.createIndex("tags", "tags", { unique: false, multiEntry: true });
       }
     };
 
