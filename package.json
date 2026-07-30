@@ -32,7 +32,7 @@
     "eslint-config-next": "16.2.11",
     "fake-indexeddb": "^6.2.5",
     "fast-xml-parser": "^5.5.6",
-    "jsdom": "^29.0.0",
+    "jsdom": "^30.0.0",
     "tailwindcss": "^4",
     "typescript": "^6",
     "vitest": "^4.1.0"
